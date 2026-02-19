@@ -52,6 +52,8 @@
   /* Typography */
   --font-mono: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
   --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Karla', system-ui, -apple-system, sans-serif;
   
   /* Font Sizes */
   --text-xs: 0.75rem;     /* 12px */
@@ -114,12 +116,25 @@
   }
   
   body {
-    font-family: var(--font-mono);
+    font-family: var(--font-body);
     background-color: var(--surface-1);
     color: var(--text-primary);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Font utility classes */
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
+  }
+  
+  .font-mono {
+    font-family: var(--font-mono);
   }
   
   /* Typography - Tabular nums for data */

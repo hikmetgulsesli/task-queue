@@ -47,7 +47,7 @@ function initializeSchema(database: Database.Database): void {
 
   // Create index for queue ordering
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(queue_order);
+    CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(status, queue_order);
   `);
 
   // Create index for status filtering
@@ -65,11 +65,11 @@ function initializeSchema(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_tasks_workflow ON tasks(workflow);
   `);
 
-  // Create queue_config table for queue state
+  // Create queue_config table for queue state (using paused as INTEGER 0/1)
   database.exec(`
     CREATE TABLE IF NOT EXISTS queue_config (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      state TEXT DEFAULT 'running' CHECK (state IN ('running', 'paused')),
+      id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      paused INTEGER DEFAULT 0 CHECK (paused IN (0, 1)),
       max_concurrent INTEGER DEFAULT 1,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -77,7 +77,7 @@ function initializeSchema(database: Database.Database): void {
 
   // Insert default queue config if not exists
   database.exec(`
-    INSERT OR IGNORE INTO queue_config (id, state, max_concurrent) VALUES (1, 'running', 1);
+    INSERT OR IGNORE INTO queue_config (id, paused, max_concurrent) VALUES (1, 0, 1);
   `);
 }
 
@@ -108,7 +108,58 @@ export interface Task {
 
 export interface QueueConfig {
   id: number;
-  state: 'running' | 'paused';
+  paused: number; // 0 or 1
   max_concurrent: number;
   updated_at: string;
+}
+
+// Queue management helpers
+export function getQueueStatus(): { paused: boolean; runningCount: number; maxConcurrent: number } {
+  const database = getDb();
+  
+  const config = database.prepare('SELECT paused, max_concurrent FROM queue_config WHERE id = 1').get() as QueueConfig;
+  const runningCount = database.prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'running'").get() as { count: number };
+  
+  return {
+    paused: config.paused === 1,
+    runningCount: runningCount.count,
+    maxConcurrent: config.max_concurrent
+  };
+}
+
+export function setQueuePaused(paused: boolean): void {
+  const database = getDb();
+  const now = new Date().toISOString();
+  database.prepare('UPDATE queue_config SET paused = ?, updated_at = ? WHERE id = 1').run(paused ? 1 : 0, now);
+}
+
+export function reorderTasks(orders: { id: string; order: number }[]): void {
+  const database = getDb();
+  const updateStmt = database.prepare('UPDATE tasks SET queue_order = ?, updated_at = ? WHERE id = ?');
+  const now = new Date().toISOString();
+  
+  database.transaction(() => {
+    for (const { id, order } of orders) {
+      updateStmt.run(order, now, id);
+    }
+  })();
+}
+
+export function getNextQueuedTask(): Task | null {
+  const database = getDb();
+  
+  const task = database.prepare(`
+    SELECT * FROM tasks 
+    WHERE status = 'queued' 
+    ORDER BY queue_order ASC, created_at ASC 
+    LIMIT 1
+  `).get() as Task | undefined;
+  
+  return task ?? null;
+}
+
+export function updateTaskQueueOrder(id: string, queueOrder: number): void {
+  const database = getDb();
+  const now = new Date().toISOString();
+  database.prepare('UPDATE tasks SET queue_order = ?, updated_at = ? WHERE id = ?').run(queueOrder, now, id);
 }

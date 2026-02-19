@@ -25,6 +25,8 @@ module.exports = {
       },
       fontFamily: {
         mono: ['Fira Code', 'JetBrains Mono', 'monospace'],
+        heading: ['Manrope', 'system-ui', 'sans-serif'],
+        body: ['Karla', 'system-ui', 'sans-serif'],
       },
       animation: {
         'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
