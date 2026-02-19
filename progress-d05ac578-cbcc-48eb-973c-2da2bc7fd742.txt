@@ -1,0 +1,72 @@
+# Progress Log
+Run: d05ac578-cbcc-48eb-973c-2da2bc7fd742
+Task: GOREV KUYRUGU (Agent Task Queue) — OpenClaw agent gorevlerini yonetmek icin web dashboard.
+Started: 2026-02-20
+
+## Codebase Patterns
+
+### Database Pattern (SQLite + better-sqlite3)
+- Use `?` positional parameters for queries (NOT `$1` which is PostgreSQL syntax)
+- Database is initialized lazily on first `getDb()` call
+- Database file location: `data/task-queue.db` (gitignored)
+- Use `closeDb()` to close connection in tests for clean state
+- Delete database file between tests for isolation
+
+### Testing Pattern
+- Use vitest with globals enabled
+- Test database: delete and recreate for each test
+- Use `beforeEach` to clean up and `afterEach` to close connections
+
+### Project Structure
+- `lib/db.ts` — Database connection and types
+- `migrations/*.sql` — Schema migrations
+- `__tests__/*.test.ts` — Test files
+- `app/api/*` — Next.js API routes (App Router)
+
+### Frontend Patterns
+- Use Lucide React for SVG icons (never emoji)
+- Use CSS custom properties from globals.css for theming
+- All clickable elements need `cursor-pointer` class
+- Add hover states with 150-200ms transitions
+- Use `focus-visible` ring for accessibility
+- Dashboard uses client-side data fetching with auto-refresh
+
+---
+
+## 2026-02-20 00:36 - US-003: Task CRUD API endpoints
+- Created REST API routes for tasks: GET/POST /api/tasks, GET/PATCH/DELETE /api/tasks/[id]
+- Added typed error classes with proper HTTP status codes
+- Filters: status, priority, workflow, pagination
+- Auto-timestamps: started_at on running, completed_at on done/failed/cancelled
+- Files: app/api/tasks/route.ts, app/api/tasks/[id]/route.ts, lib/errors.ts, lib/error-handler.ts, __tests__/api/tasks.test.ts
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/12
+- **Learnings:** Tests require the dev server running (port 3518) to test API routes. vitest.config.ts needed @ alias configuration for imports.
+
+## 2026-02-20 00:41 - US-005: Stats/reporting API endpoint
+- Created GET /api/stats endpoint with aggregated statistics
+- Returns counts by status, priority, workflow
+- Calculates success rate (done/(done+failed))
+- Calculates average completion time in minutes
+- Files: app/api/stats/route.ts, __tests__/api/stats.test.ts
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/13
+- **Learnings:** Database tests (db.test.ts) have issues with native module in this worktree. API tests that use HTTP requests work better.
+
+## 2026-02-20 01:10 - US-010: Dashboard homepage with stats
+- Created dashboard page with task statistics cards
+- Stats cards show: Total Tasks, Queued, Running, Done Today, Failed
+- Quick action buttons: New Task, View Queue, Running Tasks
+- Recent tasks list (last 10 created) with status icons and priority badges
+- Status breakdown visual with stacked bar chart and legend
+- Success rate donut chart with average completion time
+- Clicking stats filters to relevant task view
+- Auto-refresh every 30 seconds for real-time updates
+- Loading and error states with retry functionality
+- Files: app/page.tsx, __tests__/dashboard.test.ts
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/21
+- **Learnings:**
+  - Client components ('use client') needed for useState/useEffect hooks
+  - SVG donut charts can be created with stroke-dasharray for progress indication
+  - Use tabular-nums for numeric data to prevent layout shift
+  - Format relative dates (e.g., "2h ago") for better UX
+
+---
