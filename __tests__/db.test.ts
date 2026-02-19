@@ -187,7 +187,7 @@ describe('Database Schema', () => {
       const columnNames = columns.map(c => c.name);
       
       expect(columnNames).toContain('id');
-      expect(columnNames).toContain('state');
+      expect(columnNames).toContain('paused');
       expect(columnNames).toContain('max_concurrent');
       expect(columnNames).toContain('updated_at');
     });
@@ -198,25 +198,25 @@ describe('Database Schema', () => {
       
       expect(config).toBeDefined();
       expect(config.id).toBe(1);
-      expect(config.state).toBe('running');
+      expect(config.paused).toBe(0);
       expect(config.max_concurrent).toBe(1);
     });
 
-    it('should enforce state check constraint', () => {
+    it('should enforce paused check constraint', () => {
       const db = getDb();
       
-      // Valid states should work
+      // Valid paused values should work
       expect(() => {
-        db.prepare("UPDATE queue_config SET state = ? WHERE id = 1").run('paused');
+        db.prepare("UPDATE queue_config SET paused = ? WHERE id = 1").run(1);
       }).not.toThrow();
 
       expect(() => {
-        db.prepare("UPDATE queue_config SET state = ? WHERE id = 1").run('running');
+        db.prepare("UPDATE queue_config SET paused = ? WHERE id = 1").run(0);
       }).not.toThrow();
 
-      // Invalid state should fail
+      // Invalid paused value should fail
       expect(() => {
-        db.prepare("UPDATE queue_config SET state = ? WHERE id = 1").run('invalid');
+        db.prepare("UPDATE queue_config SET paused = ? WHERE id = 1").run(2);
       }).toThrow();
     });
 
@@ -225,20 +225,20 @@ describe('Database Schema', () => {
       
       // Trying to insert a second row should fail due to the CHECK constraint
       expect(() => {
-        db.prepare("INSERT INTO queue_config (id, state, max_concurrent) VALUES (?, ?, ?)")
-          .run(2, 'running', 1);
+        db.prepare("INSERT INTO queue_config (id, paused, max_concurrent) VALUES (?, ?, ?)")
+          .run(2, 0, 1);
       }).toThrow();
     });
 
     it('should update queue config', () => {
       const db = getDb();
       
-      db.prepare("UPDATE queue_config SET state = ?, max_concurrent = ? WHERE id = 1")
-        .run('paused', 2);
+      db.prepare("UPDATE queue_config SET paused = ?, max_concurrent = ? WHERE id = 1")
+        .run(1, 2);
 
       const config = db.prepare('SELECT * FROM queue_config WHERE id = 1').get() as QueueConfig;
       
-      expect(config.state).toBe('paused');
+      expect(config.paused).toBe(1);
       expect(config.max_concurrent).toBe(2);
     });
   });
