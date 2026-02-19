@@ -40,3 +40,22 @@ Started: 2026-02-19
   - Need to clean database file between tests for isolation
 
 ---
+
+## 2026-02-19 22:24 - US-006: UI layout and navigation
+- Created responsive layout with sidebar navigation and mobile header
+- Added Navigation component with 4 routes: Home, Tasks, Board, Stats using Lucide React icons
+- Added MobileNav component with hamburger menu and overlay for mobile viewports
+- Applied design tokens: Manrope for headings, Karla for body text, Fira Code for mono
+- Created placeholder pages for /tasks, /board, /stats routes with card-based layouts
+- Updated globals.css with font-heading, font-body, font-mono utility classes
+- Updated tailwind.config.js with fontFamily extensions
+- Added UI layout tests in __tests__/ui-layout.test.ts
+- Typecheck passes, build succeeds
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/4
+- **Learnings:**
+  - Using CSS custom properties for theming allows consistent dark mode
+  - Mobile navigation requires careful z-index management and overlay handling
+  - Lucide React provides clean, consistent SVG icons that match the monospace aesthetic
+  - Tailwind's lg: breakpoint (1024px) is a good threshold for sidebar vs mobile nav
+
+---
