@@ -40,3 +40,25 @@ Started: 2026-02-19
   - Need to clean database file between tests for isolation
 
 ---
+## 2026-02-20 00:55 - US-007: Task list page with filtering
+- Created /tasks page with responsive table displaying all tasks
+- Added status filter dropdown with options: All, Backlog, Queued, Running, Done, Failed, Cancelled
+- Added priority filter dropdown with options: All, Critical, High, Medium, Low
+- Added workflow filter dropdown with options: All, Feature Dev, Bug Fix, Security Audit
+- Filters update URL params (?status=running&priority=high) and persist on refresh
+- Added pagination support (20 items per page)
+- Added loading state with spinner while fetching data
+- Added empty state with helpful messaging
+- Added active filter badges with ability to remove individual filters
+- Created /tasks/new page for creating new tasks
+- Used project design tokens and CSS custom properties
+- Added proper accessibility (aria-labels, semantic HTML)
+- Files: app/tasks/page.tsx, app/tasks/new/page.tsx, __tests__/task-list.test.ts
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/17
+- **Learnings:**
+  - Use `useSearchParams` from next/navigation to read URL params
+  - Wrap client components using useSearchParams in Suspense boundary
+  - Use `router.push` with `{ scroll: false }` to update URL without scrolling
+  - For API tests, HTTP requests to dev server work better than direct DB imports
+
+---
