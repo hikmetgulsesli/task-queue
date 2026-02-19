@@ -20,18 +20,18 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 -- Indexes for common queries
-CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(queue_order);
+CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(status, queue_order);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_priority ON tasks(priority);
 CREATE INDEX IF NOT EXISTS idx_tasks_workflow ON tasks(workflow);
 
--- Queue config table: stores queue state (running/paused) and max concurrent runs
+-- Queue config table: stores queue state (paused=0/1) and max concurrent runs
 CREATE TABLE IF NOT EXISTS queue_config (
   id INTEGER PRIMARY KEY CHECK (id = 1),
-  state TEXT DEFAULT 'running' CHECK (state IN ('running', 'paused')),
+  paused INTEGER DEFAULT 0 CHECK (paused IN (0, 1)),
   max_concurrent INTEGER DEFAULT 1,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert default queue config
-INSERT OR IGNORE INTO queue_config (id, state, max_concurrent) VALUES (1, 'running', 1);
+INSERT OR IGNORE INTO queue_config (id, paused, max_concurrent) VALUES (1, 0, 1);
