@@ -39,4 +39,17 @@ Started: 2026-02-19
   - better-sqlite3 uses synchronous API (not async)
   - Need to clean database file between tests for isolation
 
+## 2026-02-19 22:40 - US-002: Fixed schema consistency
+- Fixed queue_config table to use `paused INTEGER (0/1)` instead of `state TEXT` for consistency
+- Updated lib/db.ts schema initialization and QueueConfig interface
+- Updated migrations/001_tasks.sql with correct schema
+- Fixed idx_tasks_queue_order index to include status column
+- Updated all tests to match the new schema
+- All 18 database tests pass, typecheck passes
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/6
+- **Learnings:**
+  - Keep schema consistent between lib/db.ts and migrations files
+  - Using INTEGER (0/1) for boolean flags is more efficient than TEXT in SQLite
+  - Index on (status, queue_order) is needed for efficient queue queries
+
 ---
