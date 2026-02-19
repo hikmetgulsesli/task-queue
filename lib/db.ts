@@ -47,7 +47,7 @@ function initializeSchema(database: Database.Database): void {
 
   // Create index for queue ordering
   database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(queue_order);
+    CREATE INDEX IF NOT EXISTS idx_tasks_queue_order ON tasks(status, queue_order);
   `);
 
   // Create index for status filtering
@@ -65,11 +65,11 @@ function initializeSchema(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_tasks_workflow ON tasks(workflow);
   `);
 
-  // Create queue_config table for queue state
+  // Create queue_config table for queue state (using paused as INTEGER 0/1)
   database.exec(`
     CREATE TABLE IF NOT EXISTS queue_config (
       id INTEGER PRIMARY KEY CHECK (id = 1),
-      state TEXT DEFAULT 'running' CHECK (state IN ('running', 'paused')),
+      paused INTEGER DEFAULT 0 CHECK (paused IN (0, 1)),
       max_concurrent INTEGER DEFAULT 1,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -77,7 +77,7 @@ function initializeSchema(database: Database.Database): void {
 
   // Insert default queue config if not exists
   database.exec(`
-    INSERT OR IGNORE INTO queue_config (id, state, max_concurrent) VALUES (1, 'running', 1);
+    INSERT OR IGNORE INTO queue_config (id, paused, max_concurrent) VALUES (1, 0, 1);
   `);
 }
 
@@ -108,7 +108,7 @@ export interface Task {
 
 export interface QueueConfig {
   id: number;
-  state: 'running' | 'paused';
+  paused: number; // 0 or 1
   max_concurrent: number;
   updated_at: string;
 }
