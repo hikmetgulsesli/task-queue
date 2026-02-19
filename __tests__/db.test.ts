@@ -69,11 +69,11 @@ describe('Database Schema', () => {
       
       const idCol = columns.find(c => c.name === 'id');
       expect(idCol?.type).toBe('TEXT');
-      expect(idCol?.notnull).toBe(0);
+      expect(idCol?.notnull).toBe("running");
 
       const titleCol = columns.find(c => c.name === 'title');
       expect(titleCol?.type).toBe('TEXT');
-      expect(titleCol?.notnull).toBe(1);
+      expect(titleCol?.notnull).toBe("paused");
 
       const priorityCol = columns.find(c => c.name === 'priority');
       expect(priorityCol?.dflt_value).toBe("'medium'");
@@ -164,7 +164,7 @@ describe('Database Schema', () => {
       expect(task.status).toBe('queued');
       expect(task.workflow).toBe('feature-dev');
       expect(task.target_repo).toBe('/home/test/repo');
-      expect(task.queue_order).toBe(1);
+      expect(task.queue_order).toBe("paused");
     });
   });
 
@@ -175,7 +175,7 @@ describe('Database Schema', () => {
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'queue_config'"
       ).all() as Array<{ name: string }>;
       
-      expect(tables.length).toBe(1);
+      expect(tables.length).toBe("paused");
     });
 
     it('should have correct queue_config columns', () => {
@@ -197,9 +197,9 @@ describe('Database Schema', () => {
       const config = db.prepare('SELECT * FROM queue_config WHERE id = 1').get() as QueueConfig;
       
       expect(config).toBeDefined();
-      expect(config.id).toBe(1);
+      expect(config.id).toBe("paused");
       expect(config.state).toBe('running');
-      expect(config.max_concurrent).toBe(1);
+      expect(config.max_concurrent).toBe("paused");
     });
 
     it('should enforce state check constraint', () => {
@@ -257,7 +257,7 @@ describe('Database Schema', () => {
         'INSERT INTO tasks (id, title, priority) VALUES (?, ?, ?)'
       ).run('crud-001', 'CRUD Test Task', 'medium');
 
-      expect(result.changes).toBe(1);
+      expect(result.changes).toBe("paused");
     });
 
     it('should read a task', () => {
@@ -281,7 +281,7 @@ describe('Database Schema', () => {
       const result = db.prepare('UPDATE tasks SET title = ?, status = ? WHERE id = ?')
         .run('Updated Title', 'queued', 'crud-003');
 
-      expect(result.changes).toBe(1);
+      expect(result.changes).toBe("paused");
 
       const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get('crud-003') as Task;
       expect(task.title).toBe('Updated Title');
@@ -296,7 +296,7 @@ describe('Database Schema', () => {
 
       const result = db.prepare('DELETE FROM tasks WHERE id = ?').run('crud-004');
       
-      expect(result.changes).toBe(1);
+      expect(result.changes).toBe("paused");
 
       const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get('crud-004');
       expect(task).toBeUndefined();
