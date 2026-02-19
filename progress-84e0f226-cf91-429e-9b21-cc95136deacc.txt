@@ -1,0 +1,42 @@
+# Progress Log
+Run: 84e0f226-cf91-429e-9b21-cc95136deacc
+Task: GOREV KUYRUGU (Agent Task Queue) — OpenClaw agent gorevlerini yonetmek icin web dashboard.
+Started: 2026-02-19
+
+## Codebase Patterns
+
+### Database Pattern (SQLite + better-sqlite3)
+- Use `?` positional parameters for queries (NOT `$1` which is PostgreSQL syntax)
+- Database is initialized lazily on first `getDb()` call
+- Database file location: `data/task-queue.db` (gitignored)
+- Use `closeDb()` to close connection in tests for clean state
+- Delete database file between tests for isolation
+
+### Testing Pattern
+- Use vitest with globals enabled
+- Test database: delete and recreate for each test
+- Use `beforeEach` to clean up and `afterEach` to close connections
+
+### Project Structure
+- `lib/db.ts` — Database connection and types
+- `migrations/*.sql` — Schema migrations
+- `__tests__/*.test.ts` — Test files
+- `app/api/*` — Next.js API routes (App Router)
+
+---
+
+## 2026-02-19 21:55 - US-002: Database schema and connection
+- Created lib/db.ts with better-sqlite3 connection helper
+- Created migrations/001_tasks.sql with full schema
+- Added queue_config table for queue state (paused/running, max_concurrent)
+- Added 18 comprehensive tests for database schema
+- Added vitest configuration
+- Updated package.json with test and typecheck scripts
+- Files changed: lib/db.ts, migrations/001_tasks.sql, __tests__/db.test.ts, vitest.config.ts, package.json, next.config.js
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/2
+- **Learnings:** 
+  - SQLite `pragma_table_info` returns `notnull` column which needs to be quoted as `[notnull]` in queries
+  - better-sqlite3 uses synchronous API (not async)
+  - Need to clean database file between tests for isolation
+
+---
