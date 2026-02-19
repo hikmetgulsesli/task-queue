@@ -40,3 +40,20 @@ Started: 2026-02-19
   - Need to clean database file between tests for isolation
 
 ---
+
+## 2026-02-20 01:05 - US-009: Task detail page
+- Created /tasks/[id] page showing full task details with read-only view
+- Implemented edit mode for updating title, description, priority, target_repo
+- Added action buttons: Start, Complete, Fail, Cancel, Delete with confirmation dialogs
+- Shows task metadata: created_at, updated_at, started_at, completed_at
+- Implemented status history/timeline visualization
+- Added markdown rendering for task descriptions
+- Files: app/tasks/[id]/page.tsx, __tests__/task-detail.test.ts
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/19
+- **Learnings:** 
+  - TypeScript strict mode requires careful handling of literal type comparisons in tests
+  - Using `as const` assertions helps with type narrowing but can cause comparison errors
+  - Lucide React icons work well with the dark theme design tokens
+  - Status history visualization provides good UX for tracking task lifecycle
+
+---
