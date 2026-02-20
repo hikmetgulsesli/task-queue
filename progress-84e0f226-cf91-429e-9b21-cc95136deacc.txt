@@ -11,11 +11,13 @@ Started: 2026-02-19
 - Database file location: `data/task-queue.db` (gitignored)
 - Use `closeDb()` to close connection in tests for clean state
 - Delete database file between tests for isolation
+- Transactions: `db.transaction(() => { ... })()` for atomic operations
 
 ### Testing Pattern
 - Use vitest with globals enabled
 - Test database: delete and recreate for each test
 - Use `beforeEach` to clean up and `afterEach` to close connections
+- API tests use HTTP requests to dev server (port 3518)
 
 ### Project Structure
 - `lib/db.ts` — Database connection and types
@@ -55,5 +57,27 @@ Started: 2026-02-19
   - Using `as const` assertions helps with type narrowing but can cause comparison errors
   - Lucide React icons work well with the dark theme design tokens
   - Status history visualization provides good UX for tracking task lifecycle
+
+---
+
+## 2026-02-20 01:16 - US-011: Queue management page
+- Created /queue page with drag-and-drop reordering for queued tasks
+- Added API endpoints:
+  - GET /api/queue - Returns queued tasks ordered by queue_order
+  - POST /api/queue - Reorders tasks with validation (transaction-based)
+  - POST /api/queue/start-next - Atomically claims next task in queue
+  - POST /api/queue/cancel-all - Bulk cancel with confirmation requirement
+- Implemented bulk actions: Start Next, Cancel All with confirmation modal
+- Added periodic auto-refresh (10 seconds) to see queue changes
+- Added up/down arrow buttons for keyboard-accessible reordering
+- Display task priority, workflow, and target repo in queue list
+- Updated tsconfig.json to exclude test files from typecheck
+- Files: app/queue/page.tsx, app/api/queue/route.ts, app/api/queue/start-next/route.ts, app/api/queue/cancel-all/route.ts, __tests__/queue-page.test.ts, tsconfig.json
+- PR: https://github.com/hikmetgulsesli/task-queue/pull/23
+- **Learnings:**
+  - better-sqlite3 transactions use `db.transaction(() => { ... })()` syntax
+  - Drag-and-drop in React requires careful handling of drag events and visual feedback
+  - Auto-refresh with useEffect and setInterval needs proper cleanup
+  - Excluding test files from tsconfig.json typecheck prevents vitest global type conflicts
 
 ---
