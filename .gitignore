@@ -43,3 +43,9 @@ coverage/
 data/
 *.db
 *.db-journal
+
+# Setfarm worktrees
+.worktrees/
+progress-*.txt
+pnpm-lock.yaml
+references
